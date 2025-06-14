@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bydd – Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+  <!-- ──────────── glass palette ──────────── -->
+  <style>
+  :root{
+    --bg-dark:#0a0f1c; --bg-light:#f4f4f8;
+    --card-dark:rgba(12,21,35,.6); --card-light:rgba(255,255,255,.75);
+    --text-dark:#fff;  --text-light:#0a0f1c;
+    --input-dark:rgba(255,255,255,.07); --input-light:rgba(0,0,0,.06);
+    --primary:#38bdf8; --button-hover:#0ea5e9;
+  }
+  [data-theme=light]{--bg:var(--bg-light);--card:var(--card-light);--text:var(--text-light);--input-bg:var(--input-light);}
+  [data-theme=dark]{--bg:var(--bg-dark);--card:var(--card-dark);--text:var(--text-dark);--input-bg:var(--input-dark);}
+
+  *{box-sizing:border-box;font-family:'Inter',sans-serif;}
+
+  body{
+    margin:0;background:var(--bg);color:var(--text);min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;gap:2rem;padding:2rem 1rem;
+    position:relative;overflow:hidden;transition:background .3s;
+  }
+  #particles-js{position:absolute;inset:0;z-index:0;}
+
+  h1{margin:0;color:var(--primary);font-size:1.8rem;text-align:center;z-index:1;}
+
+  /* loading spinner */
+.spinner{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;          /* let user interact with the page */
+  background:transparent;       /* no page-blocking backdrop */
+  z-index:2;
+}
+.spinner::before{
+  content:'';width:42px;height:42px;border:5px solid var(--primary);
+  border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+  /* search / sort bar */
+  .controls{
+    backdrop-filter:blur(25px);background:var(--card);padding:1rem;border-radius:16px;
+    border:1px solid rgba(255,255,255,.12);display:flex;flex-wrap:wrap;gap:1rem;
+    max-width:1000px;width:100%;z-index:1;
+  }
+  .controls input[type=text], .controls input[type=number]{
+    flex:1 1 170px;min-width:0;
+    padding:.65rem 1rem;border-radius:10px;background:var(--input-bg);
+    border:1px solid rgba(255,255,255,.15);color:var(--text);font-size:.95rem;
+  }
+  .controls input::placeholder{color:#aaa;}
+  .controls input:focus{border-color:var(--primary);outline:none;background:rgba(255,255,255,.1);}
+
+  /* sort radio looks like checkbox */
+  .sort-group{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;}
+  .sort-group label{display:flex;align-items:center;font-size:.85rem;gap:.4rem;cursor:pointer;}
+  .sort-group input{appearance:none;width:1rem;height:1rem;border-radius:3px;
+                    border:2px solid #aaa;}
+  .sort-group input:checked{border-color:var(--primary);background:var(--primary);}
+  .sort-group span{user-select:none;}
+
+  /* cards grid */
+  /* .cards{
+    z-index:1;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:1.4rem;max-width:1200px;width:100%;
+  } */
+
+    .cards{
+    z-index:1;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:1.4rem;max-width:1200px;width:100%;
+    overflow-y:auto;                 /* ← show vertical scrollbar when needed */
+    max-height:calc(100vh - 310px);  /* ~full viewport minus header & filters */
+    padding-right:.25rem;            /* keep scrollbar off content edge */
+    }
+
+  .card{
+    margin-top:0.25em;backdrop-filter:blur(25px);background:var(--card);border-radius:16px;
+    border:1px solid rgba(255,255,255,.12);padding:1.1rem 1.3rem;cursor:pointer;
+    display:flex;flex-direction:column;gap:.45rem;min-height:140px;
+    transition:transform .25s,box-shadow .25s;
+  }
+  .card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.45);}
+  .card h3{margin:0;font-size:1.05rem;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .card .desc{font-size:.9rem;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .card .price{margin-top:auto;font-weight:600;font-size:1rem;}
+
+  /* modal */
+  .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.55);
+              display:none;align-items:center;justify-content:center;z-index:6;}
+  .modal{width:clamp(280px,90%,520px);background:var(--card);backdrop-filter:blur(25px);
+         border-radius:20px;padding:2rem;border:1px solid rgba(255,255,255,.15);}
+  .modal h2{margin-top:0;color:var(--primary);font-size:1.4rem;}
+  .modal dl{margin:1rem 0;display:grid;grid-template-columns:max-content 1fr;
+            row-gap:.6rem;column-gap:1rem;font-size:.95rem;}
+  .modal dt{opacity:.7;}
+  .modal-close{margin-top:1.6rem;padding:.6rem 1.3rem;border:none;border-radius:10px;
+               background:var(--primary);color:#0f172a;font-weight:bold;cursor:pointer;
+              margin-left:auto;}
+  .modal dl dd{
+    white-space: normal;   /* allow wrapping */
+    word-break: break-word;/* break very long words/strings */
+  }
+
+  /* theme chip */
+  .theme-toggle{
+    position:fixed;top:20px;right:20px;z-index:7;background:var(--card);
+    border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:.45rem 1rem;
+    font-size:.8rem;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,.25);
+  }
+  /* refresh fab */
+  .refresh-btn{
+    position:fixed;bottom:20px;right:20px;z-index:4;
+    background:linear-gradient(135deg,var(--primary),var(--button-hover));
+    color:#0f172a;font-weight:bold;border:none;border-radius:50%;cursor:pointer;
+    width:48px;height:48px;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 10px rgba(0,0,0,.35);font-size:1.2rem;transition:transform .25s;
+  }
+  .refresh-btn:hover{transform:rotate(90deg) scale(1.05);}
+  .refresh-btn:active{transform:rotate(90deg) scale(.95);}
+  .btn-sold{margin-top:1.6rem;padding:.6rem 1.3rem;border:none;border-radius:10px;
+               font-weight:bold;cursor:pointer;background:#4ade80;color:#0f172a;}
+  .btn-del {margin-top:1.6rem;padding:.6rem 1.3rem;border:none;border-radius:10px;
+               font-weight:bold;cursor:pointer;background:#f87171;color:#0f172a;}
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+</head>
+<body>
+
+<!-- particles background -->
+<div id="particles-js"></div>
+
+<!-- loading spinner (hidden after data loads) -->
+<div id="spinner" class="spinner"></div>
+<iframe name="actionFrame" style="display:none;"></iframe>
+
+<!-- theme toggle -->
+<!-- <div class="theme-toggle" onclick="toggleTheme()">Light Mode</div> -->
+
+<h1>Bydd</h1>
+
+<!-- FILTER BAR -->
+<div class="controls">
+  <input id="searchCoin" type="text"   placeholder="Search Coin…" oninput="applyFilters()">
+  <input id="minPrice"   type="number" placeholder="Min Price"    oninput="applyFilters()">
+  <input id="maxPrice"   type="number" placeholder="Max Price"    oninput="applyFilters()">
+
+  <div class="sort-group" onchange="applyFilters()">
+    <label><input type="radio" name="sort" value="" checked><span>None</span></label>
+    <label><input type="radio" name="sort" value="pAsc"><span>Price ↑</span></label>
+    <label><input type="radio" name="sort" value="pDesc"><span>Price ↓</span></label>
+    <label><input type="radio" name="sort" value="tAsc"><span>Earliest Submission</span></label>
+    <label><input type="radio" name="sort" value="tDesc"><span>Latest Submission</span></label>
+  </div>
+</div>
+
+<!-- CARD GRID -->
+<div id="cardArea" class="cards"></div>
+
+<!-- MODAL -->
+<div id="modalBack" class="modal-back" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h2 id="mCoin">Coin</h2>
+    <dl id="mDetails"></dl>
+    <img id="mImg" referrerpolicy="no-referrer" style="
+      width:100%;
+      max-height:13em;
+      object-fit:cover;
+      border-radius:10px;
+      margin-top:1rem;
+      display:none;">
+    <div style="display:flex;gap:1rem;margin-top:1.4rem;">
+      <button class="btn-sold" onclick="markCurrent('Sold')">Sold</button>
+      <button class="btn-del"  onclick="markCurrent('Delete')">Delete</button>
+      <button class="modal-close" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<button class="refresh-btn" title="Refresh" onclick="refreshData()">⟳</button>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbxAe8l-i-di8PdOPvUqhWkjI2AHQOfIWuq0TL-dQhg3GLfHblTcu3cT5L6f9-WusGOy/exec?key=byddkey';
+
+let ROWS=[],FILTERED=[];
+function showSpinner(){document.getElementById('spinner').style.display='flex';}
+function hideSpinner(){document.getElementById('spinner').style.display='none';}
+const hideCards   = () => cardArea.style.visibility='hidden';
+const showCards   = () => cardArea.style.visibility='visible';
+
+/* fetch data then hide spinner */
+fetch(API_URL)
+  .then(r=>r.json())
+  .then(rows=>{
+    ROWS=rows;FILTERED=[...ROWS];renderCards(FILTERED);
+    document.getElementById('spinner').style.display='none';
+  })
+  .catch(err=>{
+    console.error('API error',err);
+    document.getElementById('spinner').style.display='none';
+  });
+
+  function loadData(){
+    return fetch(API_URL)
+        .then(r=>r.json())
+        .then(rows=>{
+        ROWS=rows;FILTERED=[...ROWS];
+        renderCards(FILTERED);
+        });
+    }
+
+    function refreshData(){
+      hideCards();
+    showSpinner();
+    loadData().finally(()=>{hideSpinner();showCards();});
+    }
+
+// /* initial load */
+// loadData().finally(hideSpinner);
+
+/* render cards */
+function renderCards(list){
+  document.getElementById('cardArea').innerHTML=list.map((r,i)=>`
+    <div class="card" onclick="showModal(${i})">
+      <h3 title="${r.Coin||''}">${r.Coin||''}</h3>
+      <div class="desc" title="${r.Description||''}">${r.Description||''}</div>
+      <img referrerpolicy="no-referrer" style='width: 100%; max-height: 7.5em; object-fit: cover; border-radius: 10px; margin-top: 1rem; margin-bottom: 1rem; display: block;' src="${r['Image URL'] || ''}">
+      <div class="price">${r['Ideal Price']?`$${r['Ideal Price']}`:''}</div>
+    </div>`).join('');
+}
+
+/* modal logic */
+function closeModal(){document.getElementById('modalBack').style.display='none';}
+
+/* filters + sort */
+function applyFilters(){
+  const q=document.getElementById('searchCoin').value.toLowerCase();
+  const minP=parseFloat(document.getElementById('minPrice').value)||-Infinity;
+  const maxP=parseFloat(document.getElementById('maxPrice').value)|| Infinity;
+  const sort=document.querySelector('input[name="sort"]:checked').value;
+
+  FILTERED=ROWS.filter(r=>{
+    if(q && !(r.Coin||'').toLowerCase().includes(q)) return false;
+    const p=parseFloat(r['Ideal Price']||'');
+    if(!isNaN(p) && (p<minP || p>maxP)) return false;
+    return true;
+  });
+
+  const price=r=>parseFloat(r['Ideal Price']||'')||0;
+  const time=r=>new Date(r.Timestamp||0).getTime();
+  if(sort==='pAsc')  FILTERED.sort((a,b)=>price(a)-price(b));
+  if(sort==='pDesc') FILTERED.sort((a,b)=>price(b)-price(a));
+  if(sort==='tAsc')  FILTERED.sort((a,b)=>time(a)-time(b));
+  if(sort==='tDesc') FILTERED.sort((a,b)=>time(b)-time(a));
+
+  renderCards(FILTERED);
+}
+
+/* theme toggle */
+function toggleTheme(){
+  const html=document.documentElement;
+  const dark=html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme',dark?'light':'dark');
+  document.querySelector('.theme-toggle').textContent=dark?'Dark Mode':'Light Mode';
+}
+
+/* particles */
+particlesJS('particles-js',{
+  particles:{number:{value:60},color:{value:'#38bdf8'},shape:{type:'circle'},
+    opacity:{value:0.2},size:{value:2},
+    line_linked:{enable:true,distance:150,color:'#38bdf8',opacity:0.15,width:1},
+    move:{enable:true,speed:1.2,out_mode:'out'}},
+  interactivity:{detect_on:'canvas',
+    events:{onhover:{enable:true,mode:'repulse'},onclick:{enable:true,mode:'push'}},
+    modes:{repulse:{distance:80},push:{particles_nb:4}}},
+  retina_detect:true
+});
+</script>
+<script>
+/* ---------- CONFIG ---------- */
+const API_POST = 'https://script.google.com/macros/s/AKfycbw4Ag-LxBq__lMdf0N6MrXAVu8h4QTrMQyn5PMzd0BPzyLfFPtyZZvLJb0Nxm6F8DYK/exec';
+/* ------ rest of your variables & helper functions stay identical ------ */
+
+/* keep a reference to the current record shown in modal */
+let CURRENT=null;
+
+/* showModal: same as before, but also save CURRENT */
+
+function showModal(idx){
+  CURRENT = FILTERED[idx];
+  const r = CURRENT;
+
+  /* text content */
+  document.getElementById('mCoin').textContent = r.Coin || 'Details';
+  document.getElementById('mDetails').innerHTML = `
+    <dt>Timestamp</dt><dd>${r.Timestamp || ''}</dd>
+    <dt>Name</dt><dd>${r.Name || ''}</dd>
+    <dt>Description</dt><dd>${r.Description || ''}</dd>
+    <dt>Ideal Price</dt><dd>${r['Ideal Price'] || ''}</dd>
+    <dt>Contact Type</dt><dd>${r.Contact || ''}</dd>
+    <dt>Contact</dt><dd>${r['Contact Type'] || ''}</dd>`;
+
+  /* image handling */
+  const img = document.getElementById('mImg');
+  const url = r['Image URL'] || r.imageUrl || '';   // adjust if your column is named differently
+  if (url){
+    img.src = url;
+    img.style.display = 'block';
+    img.onerror = () => { img.style.display = 'none'; };
+  }else{
+    img.style.display = 'none';
+  }
+
+  /* reveal modal */
+  document.getElementById('modalBack').style.display = 'flex';
+}
+
+/* ---------- Sold / Delete ---------- */
+function markCurrent(reason){
+  if(!CURRENT) return;
+  if(!confirm(`Mark "${CURRENT.Coin}" as ${reason}?`)) return;
+
+  /* build a throw-away form that targets the hidden iframe */
+  const f = document.createElement('form');
+  f.action = API_POST;
+  f.method = 'POST';
+  f.target = 'actionFrame';
+  f.style.display='none';
+
+  const add = (n,v) => {
+    const i = document.createElement('input');
+    i.type='hidden'; i.name=n; i.value=v; f.appendChild(i);
+  };
+
+  /* pass every field you want to store */
+  add('timestamp',     CURRENT.Timestamp);
+  add('name',          CURRENT.Name);
+  add('coin',          CURRENT.Coin);
+  add('description',   CURRENT.Description);
+  add('idealprice',    CURRENT['Ideal Price']);
+  add('contacttype',   CURRENT['Contact Type']);
+  add('contact',       CURRENT.Contact);
+  add('imgURL',       CURRENT['Image URL']);
+  add('reason',        reason);
+
+  document.body.appendChild(f);
+  f.submit();               // fires the request (no CORS)
+  f.remove();               // clean-up
+
+  /* optimistic UI update */
+  ROWS = ROWS.filter(r => r.Timestamp !== CURRENT.Timestamp);
+  applyFilters();
+  closeModal();
+}
+</script>
+
+</body>
+</html>
