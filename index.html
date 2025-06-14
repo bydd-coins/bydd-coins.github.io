@@ -130,6 +130,9 @@
                font-weight:bold;cursor:pointer;background:#4ade80;color:#0f172a;}
   .btn-del {margin-top:1.6rem;padding:.6rem 1.3rem;border:none;border-radius:10px;
                font-weight:bold;cursor:pointer;background:#f87171;color:#0f172a;}
+@media (max-width:600px){
+  .price-range{ display:none; }
+}
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
@@ -151,8 +154,10 @@
 <!-- FILTER BAR -->
 <div class="controls">
   <input id="searchCoin" type="text"   placeholder="Search Coin…" oninput="applyFilters()">
-  <input id="minPrice"   type="number" placeholder="Min Price"    oninput="applyFilters()">
-  <input id="maxPrice"   type="number" placeholder="Max Price"    oninput="applyFilters()">
+  <div class="price-range">
+    <input id="minPrice"   type="number" placeholder="Min Price"    oninput="applyFilters()">
+    <input id="maxPrice"   type="number" placeholder="Max Price"    oninput="applyFilters()">
+  </div>
 
   <div class="sort-group" onchange="applyFilters()">
     <label><input type="radio" name="sort" value="" checked><span>None</span></label>
@@ -250,6 +255,7 @@ function renderCards(list){
         <div class="price">${r['Ideal Price'] ? `$${r['Ideal Price']}` : ''}</div>
       </div>`;
   }).join('');
+
 }
 
 /* modal logic */
@@ -332,7 +338,7 @@ function showModal(idx){
   document.getElementById('mDetails').innerHTML = `
     <dt>Timestamp</dt><dd>${ts}</dd>
     <dt>Name</dt><dd>${r.Name || ''}</dd>
-    <dt>Description</dt><dd>${((r.Description.length > 150 | IS_MOBILE) ? r.Description.slice(0,80) + '...' : r.Description) || ''}</dd>
+    <dt>Description</dt><dd>${((r.Description.length > 200 | (IS_MOBILE & r.Description.length > 60)) ? r.Description.slice(0,Math.max(r.Description.length / 2, 60)) + '...' : r.Description) || ''}</dd>
     <dt>Price</dt><dd>${r['Ideal Price'] || ''}</dd>
     <dt>Contact Type</dt><dd>${r.Contact || ''}</dd>
     <dt>Contact</dt><dd>${r['Contact Type'] || ''}</dd>`;
