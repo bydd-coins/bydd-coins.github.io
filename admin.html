@@ -73,19 +73,20 @@
   } */
 
     .cards{
-    z-index:1;
-    display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-    gap:1.4rem;max-width:1200px;width:100%;
-    overflow-y:auto;                 /* ← show vertical scrollbar when needed */
-    max-height:calc(100vh - 310px);  /* ~full viewport minus header & filters */
-    padding-right:.25rem;            /* keep scrollbar off content edge */
+      z-index:1;
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+      gap:1.4rem;max-width:1200px;width:100%;
+      overflow-y:auto;                 /* ← show vertical scrollbar when needed */
+      max-height:calc(100vh - 310px);  /* ~full viewport minus header & filters */
+      padding-right:.25rem;            /* keep scrollbar off content edge */
+      padding-bottom:1rem;    /* tiny footer gap */
     }
 
   .card{
     margin-top:0.25em;backdrop-filter:blur(25px);background:var(--card);border-radius:16px;
     border:1px solid rgba(255,255,255,.12);padding:1.1rem 1.3rem;cursor:pointer;
     display:flex;flex-direction:column;gap:.45rem;min-height:140px;
-    transition:transform .25s,box-shadow .25s;
+    transition:transform .25s,box-shadow .25s;max-height:calc(100dvh - 310px);
   }
   .card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.45);}
   .card h3{margin:0;font-size:1.05rem;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -188,6 +189,9 @@
 <button class="refresh-btn" title="Refresh" onclick="refreshData()">⟳</button>
 
 <script>
+const IS_MOBILE = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+                    .test(navigator.userAgent);
+
 const API_URL = 'https://script.google.com/macros/s/AKfycbxAe8l-i-di8PdOPvUqhWkjI2AHQOfIWuq0TL-dQhg3GLfHblTcu3cT5L6f9-WusGOy/exec?key=byddkey';
 
 let ROWS=[],FILTERED=[];
@@ -228,15 +232,28 @@ fetch(API_URL)
 
 /* render cards */
 function renderCards(list){
-  document.getElementById('cardArea').innerHTML=list.map((r,i)=>`
-    <div class="card" onclick="showModal(${i})">
-      <h3 title="${r.Coin||''}">${r.Coin||''}</h3>
-      <div class="desc" title="${r.Description||''}">${r.Description||''}</div>
-      <img referrerpolicy="no-referrer" style='width: 100%; max-height: 7.5em; object-fit: cover; border-radius: 10px; margin-top: 1rem; margin-bottom: 1rem; display: block;' src="${r['Image URL'] || ''}">
-      <div class="price">${r['Ideal Price']?`$${r['Ideal Price']}`:''}</div>
-    </div>`).join('');
-}
+  document.getElementById('cardArea').innerHTML = list.map((r,i) => {
 
+    /* clamp description to 100 chars */
+    const descFull = r.Description || '';
+    const desc     = descFull.length > 100 ? descFull.slice(0,100) + '...' : descFull;
+
+    /* image logic */
+    const url  = r['Image URL'] || r.imageUrl || '';
+    const disp = IS_MOBILE ? 'none' : (url ? 'block' : 'none');
+
+    return `
+      <div class="card" onclick="showModal(${i})">
+        <h3 title="${r.Coin||''}">${r.Coin||''}</h3>
+        <div class="desc" title="${descFull}">${desc}</div>
+        <img referrerpolicy="no-referrer"
+             style="width:100%;max-height:20em;object-fit:cover;
+                    border-radius:10px;margin:1rem 0;display:${disp};"
+             src="${url}">
+        <div class="price">${r['Ideal Price'] ? `$${r['Ideal Price']}` : ''}</div>
+      </div>`;
+  }).join('');
+}
 /* modal logic */
 function closeModal(){document.getElementById('modalBack').style.display='none';}
 
@@ -292,19 +309,35 @@ const API_POST = 'https://script.google.com/macros/s/AKfycbw4Ag-LxBq__lMdf0N6MrX
 /* keep a reference to the current record shown in modal */
 let CURRENT=null;
 
+function formatEST(iso){
+  const d  = new Date(iso);
+  const ny = new Date(d.toLocaleString('en-US',{timeZone:'America/New_York'}));
+
+  const mm  = String(ny.getMonth()+1).padStart(2,'0');
+  const dd  = String(ny.getDate()).padStart(2,'0');
+  const yy  = ny.getFullYear();
+  const hh  = String(ny.getHours()).padStart(2,'0');
+  const min = String(ny.getMinutes()).padStart(2,'0');
+
+  return `${mm}/${dd}/${yy} ${hh}:${min} EST`;
+}
+
+
 /* showModal: same as before, but also save CURRENT */
 
 function showModal(idx){
   CURRENT = FILTERED[idx];
   const r = CURRENT;
+  const ts = r.Timestamp ? formatEST(r.Timestamp) : '';
 
   /* text content */
   document.getElementById('mCoin').textContent = r.Coin || 'Details';
+
   document.getElementById('mDetails').innerHTML = `
-    <dt>Timestamp</dt><dd>${r.Timestamp || ''}</dd>
+    <dt>Timestamp</dt><dd>${ts}</dd>
     <dt>Name</dt><dd>${r.Name || ''}</dd>
-    <dt>Description</dt><dd>${r.Description || ''}</dd>
-    <dt>Ideal Price</dt><dd>${r['Ideal Price'] || ''}</dd>
+    <dt>Description</dt><dd>${((r.Description.length > 150 | IS_MOBILE) ? r.Description.slice(0,80) + '...' : r.Description) || ''}</dd>
+    <dt>Price</dt><dd>${r['Ideal Price'] || ''}</dd>
     <dt>Contact Type</dt><dd>${r.Contact || ''}</dd>
     <dt>Contact</dt><dd>${r['Contact Type'] || ''}</dd>`;
 

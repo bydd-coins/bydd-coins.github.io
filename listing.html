@@ -117,7 +117,7 @@
         target="hidden_iframe"
         onsubmit="showStatus(event)">
 
-    <input type="text" name="name" placeholder="Name" required value="Peter Zheng">
+    <input type="text" name="name" placeholder="Name" required>
     <input type="text" name="coin" placeholder="Coin Description" required>
 
     <!-- contact -->
@@ -139,7 +139,7 @@
     </div>
     <input type="hidden" name="imageUrl" id="imageUrl">
 
-    <textarea name="details" rows="4" placeholder="Additional Details..."></textarea>
+    <textarea name="details" rows="4" placeholder="Additional Details"></textarea>
 
     <button id="submitBtn" type="submit">Publish Listing</button>
     <div id="status" class="status success"></div>
@@ -157,7 +157,6 @@ function updateContactField(){
 
   if(type==='Text Message'){
     field.type='text';field.inputMode='tel';field.placeholder='Phone Number (XXX-XXX-XXXX)';
-    field.value='773-431-0961';
     field.minLength=12;field.maxLength=12;
     field.oninput=()=>{let d=field.value.replace(/\D/g,'').slice(0,10);
       field.value=d.length>6?`${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`:
