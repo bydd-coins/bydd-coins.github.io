@@ -96,13 +96,25 @@
     border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;
   }
   @keyframes spin{to{transform:rotate(360deg);}}
+  @media (max-width:600px){
+  /* hide the radio selector */
+  .contact-group{ display:none; }
+
+  /* make the details box single-line */
+  textarea[name="details"]{
+    height:5.2rem;      /* roughly one line */
+    max-height:5.2rem;
+    resize:none;        /* no manual resize handle */
+  }
+}
+
   </style>
 </head>
 <body>
 
 <iframe name="hidden_iframe" style="display:none;"></iframe>
 <div id="particles-js"></div>
-<div id="themeToggle" class="theme-toggle">Light Mode</div>
+<!-- <div id="themeToggle" class="theme-toggle">Light Mode</div> -->
 
 <!-- screen-locking spinner -->
 <div id="uploadLock" class="upload-lock"></div>
