@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bydd – Seller Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+  <style>
+    :root{--bg-dark:#0a0f1c;--bg-light:#f4f4f8;--card-dark:rgba(12,21,35,.6);--card-light:rgba(255,255,255,.75);--text-dark:#fff;--text-light:#0a0f1c;--input-dark:rgba(255,255,255,.07);--input-light:rgba(0,0,0,.06);--primary:#38bdf8;--button-hover:#0ea5e9;}
+    [data-theme=light]{--bg:var(--bg-light);--card:var(--card-light);--text:var(--text-light);--input-bg:var(--input-light);} [data-theme=dark]{--bg:var(--bg-dark);--card:var(--card-dark);--text:var(--text-dark);--input-bg:var(--input-dark);}
+    *{box-sizing:border-box;font-family:'Inter',sans-serif;}
+    body{margin:0;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:2rem;padding:2rem 1rem;position:relative;overflow:hidden;}
+    #particles-js{position:absolute;inset:0;z-index:0;}
+    h1{margin:0;color:var(--primary);font-size:1.8rem;text-align:center;z-index:1;}
+
+    .spinner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;background:transparent;z-index:2;}
+    .spinner::before{content:'';width:42px;height:42px;border:5px solid var(--primary);border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;} @keyframes spin{to{transform:rotate(360deg);}}
+
+    .controls{backdrop-filter:blur(25px);background:var(--card);padding:1rem;border-radius:16px;border:1px solid rgba(255,255,255,.12);display:flex;flex-wrap:wrap;gap:1rem;max-width:1000px;width:100%;z-index:1;}
+    .controls input{flex:1 1 170px;min-width:0;padding:.65rem 1rem;border-radius:10px;background:var(--input-bg);border:1px solid rgba(255,255,255,.15);color:var(--text);font-size:.95rem;}
+    .controls input::placeholder{color:#aaa;} .controls input:focus{border-color:var(--primary);outline:none;background:rgba(255,255,255,.1);}
+
+    .cards{z-index:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.4rem;max-width:1200px;width:100%;overflow-y:auto;max-height:calc(100vh - 310px);padding-right:.25rem;padding-bottom:1rem;}
+    .card{margin-top:.25em;backdrop-filter:blur(25px);background:var(--card);border-radius:16px;border:1px solid rgba(255,255,255,.12);padding:1.1rem 1.3rem;cursor:pointer;display:flex;flex-direction:column;gap:.45rem;min-height:140px;transition:transform .25s,box-shadow .25s;}
+    .card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.45);}
+    .card h3{margin:0;font-size:1.05rem;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .card .desc{font-size:.9rem;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .card .price{margin-top:auto;font-weight:600;font-size:1rem;}
+
+    .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:6;}
+    .modal{width:clamp(280px,90%,520px);background:var(--card);backdrop-filter:blur(25px);border-radius:20px;padding:2rem;border:1px solid rgba(255,255,255,.15);position:relative;}
+    .modal h2{margin-top:0;color:var(--primary);font-size:1.4rem;}
+    .modal dl{margin:1rem 0;display:grid;grid-template-columns:max-content 1fr;row-gap:.6rem;column-gap:1rem;font-size:.95rem;}
+    .modal dt{opacity:.7;} .modal dl dd{white-space:normal;word-break:break-word;}
+    .modal .sell-btn{position:absolute;bottom:1.5rem;left:2rem;padding:.6rem 1.3rem;border:none;border-radius:10px;background:var(--primary);color:#0f172a;font-weight:bold;cursor:pointer;}
+    .modal .sell-form{display:none;margin-top:1rem;gap:.5rem;align-items:center;}
+    .modal .sell-form input{flex:1;padding:.5rem;border-radius:8px;border:1px solid rgba(255,255,255,.15);}
+    .modal .sell-form button{padding:.5rem 1rem;border:none;border-radius:8px;background:var(--button-hover);color:#0f172a;font-weight:bold;cursor:pointer;}
+
+    #loginBack{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:10;}
+    #loginBox{background:var(--card);backdrop-filter:blur(25px);padding:2rem;border-radius:16px;border:1px solid rgba(255,255,255,.15);display:flex;flex-direction:column;gap:1rem;max-width:320px;width:90%;}
+    #loginBox input{padding:.65rem 1rem;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:var(--input-bg);color:var(--text);font-size:.95rem;}
+    #loginError{color:#f87171;font-size:.9rem;height:1em;}
+  </style>
+</head>
+<body>
+  <div id="particles-js"></div>
+
+  <!-- Login Overlay -->
+  <div id="loginBack">
+    <div id="loginBox">
+      <h2>Admin Login</h2>
+      <input id="adminIdInput" type="text" placeholder="Enter Admin ID" />
+      <button onclick="attemptLogin()">Login</button>
+      <p id="loginError"></p>
+    </div>
+  </div>
+
+  <div id="spinner" class="spinner"></div>
+  <iframe name="actionFrame" style="display:none"></iframe>
+
+  <h1>Bydd</h1>
+
+  <div class="controls">
+    <input id="searchCoin" type="text" placeholder="Search Coin…" oninput="applyFilters()" />
+    <input id="minPrice" type="number" placeholder="Min Price" oninput="applyFilters()" />
+    <input id="maxPrice" type="number" placeholder="Max Price" oninput="applyFilters()" />
+  </div>
+
+  <div id="cardArea" class="cards"></div>
+
+  <div id="modalBack" class="modal-back" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <h2 id="mCoin">Coin</h2>
+      <dl id="mDetails"></dl>
+      <img id="mImg" referrerpolicy="no-referrer" style="width:100%;max-height:13em;object-fit:cover;border-radius:10px;margin-top:1rem;display:none;" />
+
+      <button class="sell-btn" onclick="showSellForm()">Sell</button>
+      <div class="sell-form" id="sellForm">
+        <input id="sellPriceInput" type="number" placeholder="How much will you sell for?" min="0" step="0.01" />
+        <button onclick="submitSell()">Submit</button>
+      </div>
+      <p id="sellMessage" style="margin-top:1rem;height:1em;"></p>
+    </div>
+  </div>
+
+  <button class="refresh-btn" title="Refresh" onclick="refreshData()">⟳</button>
+
+  <script>
+    // Admin login
+    const validIDs = ['admin1','admin2','admin3'];
+    let currentUser = null;
+    function attemptLogin() {
+      const id = document.getElementById('adminIdInput').value.trim();
+      if(validIDs.includes(id)) {
+        currentUser = id;
+        document.getElementById('loginBack').style.display = 'none';
+        loadData();
+      } else {
+        document.getElementById('loginError').textContent = 'Invalid ID, please try again.';
+      }
+    }
+
+    // Particles
+    particlesJS('particles-js',{particles:{number:{value:60},color:{value:'#38bdf8'},shape:{type:'circle'},opacity:{value:0.2},size:{value:2},line_linked:{enable:true,distance:150,color:'#38bdf8',opacity:0.15,width:1},move:{enable:true,speed:1.2,out_mode:'out'}},interactivity:{detect_on:'canvas',events:{onhover:{enable:true,mode:'repulse'},onclick:{enable:true,mode:'push'}},modes:{repulse:{distance:80},push:{particles_nb:4}}},retina_detect:true});
+  </script>
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycby-I1B4vCz6p1RPGfsyRzqHsl1n2KgqacZX9iWH1eMISOOxaZHNYUavFtJ3c2t4_Klr/exec?key=byddkey';
+    const API_POST = 'https://script.google.com/macros/s/AKfycbw4Ag-LxBq__lMdf0N6MrXAVu8h4QTrMQyn5PMzd0BPzyLfFPtyZZvLJb0Nxm6F8DYK/exec';
+    let ROWS=[],FILTERED=[]; let CURRENT=null;
+
+    function showSpinner(){document.getElementById('spinner').style.display='flex';}
+    function hideSpinner(){document.getElementById('spinner').style.display='none';}
+    const cardArea = document.getElementById('cardArea');
+    const hideCards = () => cardArea.style.visibility='hidden';
+    const showCards = () => cardArea.style.visibility='visible';
+
+    function loadData(){ showSpinner(); return fetch(API_URL).then(r=>r.json()).then(rows=>{ROWS=rows;FILTERED=[...ROWS];renderCards(FILTERED);}).finally(()=>hideSpinner()); }
+    function refreshData(){ hideCards(); loadData().then(showCards); }
+
+    function renderCards(list){ cardArea.innerHTML = list.map((r,i)=>{
+      const desc = r.Details?.length>100 ? r.Details.slice(0,100)+'...' : r.Details||'';
+      const url = r['Image URL']||'';
+      return `
+        <div class="card" onclick="showModal(${i})">
+          <h3 title="${r.Coin||''}">${r.Coin||''}</h3>
+          <div class="desc" title="${r.Details||''}">${desc}</div>
+          <img src="${url}" referrerpolicy="no-referrer" style="width:100%;max-height:20em;object-fit:cover;border-radius:10px;margin:1rem 0;display:${url?'block':'none'};" />
+          <div class="price">${r['Price']?`$${r['Price']}`:''}</div>
+        </div>`; }).join(''); }
+
+    function closeModal(){ document.getElementById('modalBack').style.display='none'; CURRENT=null; }
+
+    function showModal(idx){ CURRENT = FILTERED[idx];
+      document.getElementById('mCoin').textContent = CURRENT.Coin;
+      document.getElementById('mDetails').innerHTML = `
+        <dt>Timestamp</dt><dd>${CURRENT.Timestamp||''}</dd>
+        <dt>Coin</dt><dd>${CURRENT.Coin||''}</dd>
+        <dt>Description</dt><dd>${CURRENT.Details||''}</dd>
+        <dt>Ideal Price</dt><dd>$${CURRENT['Price']||''}</dd>`;
+      const img = document.getElementById('mImg');
+      if(CURRENT['Image URL']){ img.src = CURRENT['Image URL']; img.style.display='block'; } else img.style.display='none';
+      document.querySelector('.sell-form').style.display='none';
+      document.getElementById('sellMessage').textContent='';
+      document.getElementById('modalBack').style.display='flex';
+    }
+
+    function showSellForm(){ document.getElementById('sellForm').style.display='flex'; }
+
+    function submitSell(){
+      const price = document.getElementById('sellPriceInput').value;
+      if(!price) return;
+      const form = document.createElement('form');
+      form.style.display='none'; form.target='actionFrame'; form.method='POST'; form.action=API_POST;
+      const add = (n,v)=>{ let i=document.createElement('input'); i.type='hidden'; i.name=n; i.value=v; form.appendChild(i); };
+      add('timestamp', CURRENT.Timestamp);
+      add('coin', CURRENT.Coin);
+      add('description', CURRENT.Details);
+      add('idealprice', CURRENT['Price']);
+      add('imageUrl', CURRENT['Image URL']);
+      add('userId', currentUser);
+      add('sellPrice', price);
+      document.body.appendChild(form);
+      form.submit(); form.remove();
+      document.getElementById('sellMessage').style.color='green';
+      document.getElementById('sellMessage').textContent='Submission successful';
+      setTimeout(()=>{ closeModal(); },3000);
+    }
+
+    // Filters & sort
+    function applyFilters(){ const q=document.getElementById('searchCoin').value.toLowerCase();
+      const minP=parseFloat(document.getElementById('minPrice').value)||-Infinity;
+      const maxP=parseFloat(document.getElementById('maxPrice').value)||Infinity;
+      FILTERED = ROWS.filter(r=>{
+        return (!q||r.Coin.toLowerCase().includes(q)) && ((parseFloat(r['Price'])||0)>=minP) && ((parseFloat(r['Price'])||0)<=maxP);
+      }); renderCards(FILTERED);
+    }
+  </script>
+</body>
+</html>

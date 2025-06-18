@@ -164,26 +164,66 @@
 
 <script>
 /* ---------- contact field ---------- */
-function updateContactField(){
-  const sel   = document.querySelector('input[name="contactType"]:checked');
+// function updateContactField(){
+//   const sel   = document.querySelector('input[name="contactType"]:checked');
+//   const field = document.getElementById('contactValue');
+//   const type  = sel ? sel.value : '';
+
+//   field.value=''; field.removeAttribute('pattern');field.removeAttribute('inputmode');
+
+//   if(type==='Text Message'){
+//     field.type='text';field.inputMode='tel';field.placeholder='Phone Number (XXX-XXX-XXXX)';
+//     field.minLength=12;field.maxLength=12;
+//     field.oninput=()=>{let d=field.value.replace(/\D/g,'').slice(0,10);
+//       field.value=d.length>6?`${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`:
+//                  d.length>3?`${d.slice(0,3)}-${d.slice(3)}`:d;}
+//   }else if(type==='Email'){
+//     field.type='email';field.placeholder='Email Address';
+//   }else{
+//     field.type='text';field.pattern='^[A-Za-z0-9_-]{3,20}$';field.placeholder='Reddit Username';
+//   }
+// }
+// document.addEventListener('DOMContentLoaded',updateContactField);
+
+function updateContactField() {
+  const sel = document.querySelector('input[name="contactType"]:checked');
   const field = document.getElementById('contactValue');
-  const type  = sel ? sel.value : '';
+  const type = sel ? sel.value : '';
 
-  field.value=''; field.removeAttribute('pattern');field.removeAttribute('inputmode');
+  // Reset field attributes
+  field.value = '';
+  field.removeAttribute('pattern');
+  field.removeAttribute('inputmode');
+  field.removeAttribute('minlength');
+  field.removeAttribute('maxlength');
+  field.oninput = null;
 
-  if(type==='Text Message'){
-    field.type='text';field.inputMode='tel';field.placeholder='Phone Number (XXX-XXX-XXXX)';
-    field.minLength=12;field.maxLength=12;
-    field.oninput=()=>{let d=field.value.replace(/\D/g,'').slice(0,10);
-      field.value=d.length>6?`${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`:
-                 d.length>3?`${d.slice(0,3)}-${d.slice(3)}`:d;}
-  }else if(type==='Email'){
-    field.type='email';field.placeholder='Email Address';
-  }else{
-    field.type='text';field.pattern='^[A-Za-z0-9_-]{3,20}$';field.placeholder='Reddit Username';
+  if (type === 'Text Message') {
+    field.type = 'text';
+    field.inputMode = 'tel';
+    field.placeholder = 'Phone Number (XXX-XXX-XXXX)';
+    field.minLength = 12;
+    field.maxLength = 12;
+    field.oninput = () => {
+      let d = field.value.replace(/\D/g, '').slice(0, 10);
+      field.value = d.length > 6
+        ? `${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`
+        : d.length > 3
+          ? `${d.slice(0,3)}-${d.slice(3)}`
+          : d;
+    };
+  } else if (type === 'Email') {
+    field.type = 'email';
+    field.placeholder = 'Email Address';
+  } else if (type === 'Reddit Username') {
+    field.type = 'text';
+    field.placeholder = 'Reddit Username';
+    field.pattern = '^[A-Za-z0-9_-]{3,20}$';
   }
 }
-document.addEventListener('DOMContentLoaded',updateContactField);
+
+document.addEventListener('DOMContentLoaded', updateContactField);
+
 
 /* ---------- IMGUR upload ---------- */
 const CLIENT_ID   = 'af3f6c7782ab6ed';               // replace with yours
