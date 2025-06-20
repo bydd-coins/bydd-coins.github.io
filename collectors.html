@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bydd – Seller Dashboard</title>
+  <title>Bydd – Collector Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
@@ -47,24 +47,15 @@
     .modal dl{margin:1rem 0;display:grid;grid-template-columns:max-content 1fr;row-gap:.6rem;column-gap:1rem;font-size:.95rem;}
     .modal dt{opacity:.7;} .modal dl dd{white-space:normal;word-break:break-word;}
     .modal .sell-btn{position:absolute;bottom:1.5rem;left:2rem;padding:.6rem 1.3rem;border:none;border-radius:10px;background:var(--primary);color:#0f172a;font-weight:bold;cursor:pointer;}
-    /* Updated sell-form to include image upload and submit disable */
-    .modal .sell-form{display:none;margin-top:1rem;gap:.5rem;display:flex;align-items:center;}
-    .modal .sell-form #sellPriceInput,
-    .modal .sell-form #sellerFileWrap {
-      flex:0 0 30%;
-    }
-    .modal .sell-form #sellSubmitBtn {
-      flex:0 0 auto;
-    }
-    .modal .sell-form input[type=file]{opacity:0;position:absolute;inset:0;width:100%;height:100%;cursor:pointer;}
-    .modal .sell-form .file-wrap{position:relative;flex:1;}
-    .modal .sell-form .file-fake{position:relative;padding:.5rem;border:1px dashed rgba(255,255,255,.3);border-radius:8px;color:#aaa;text-align:center;font-size:.9rem;pointer-events:none;white-space:nowrap;}
-    .modal .sell-form input{flex:1;padding:.5rem;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:var(--input-bg);color:var(--text);}
+    .modal .sell-form{display:none;margin-top:1rem;gap:.5rem;align-items:center;}
+    .modal .sell-form input{flex:1;padding:.5rem;border-radius:8px;border:1px solid rgba(255,255,255,.15);}
     .modal .sell-form button{padding:.5rem 1rem;border:none;border-radius:8px;background:var(--button-hover);color:#0f172a;font-weight:bold;cursor:pointer;}
-    .modal-close{position:absolute;bottom:1.5rem;right:2rem;padding:.6rem 1.3rem;border:none;border-radius:10px;background:var(--primary);color:#0f172a;font-weight:bold;cursor:pointer;}
+    .modal-close{position:absolute;bottom:1.5rem;right:2rem;padding:.6rem 1.3rem;border:none;border-radius:10px;background:var(--primary);color:#0f172a;font-weight:bold;cursor:pointer}
+  /* sort radio looks like checkbox */
   .sort-group{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;}
   .sort-group label{display:flex;align-items:center;font-size:.85rem;gap:.4rem;cursor:pointer;}
-  .sort-group input{appearance:none;width:1rem;height:1rem;border-radius:3px;border:2px solid #aaa;}
+  .sort-group input{appearance:none;width:1rem;height:1rem;border-radius:3px;
+                    border:2px solid #aaa;}
   .sort-group input:checked{border-color:var(--primary);background:var(--primary);}
   .sort-group span{user-select:none;}
 
@@ -76,65 +67,21 @@
     width:48px;height:48px;display:flex;align-items:center;justify-content:center;
     box-shadow:0 4px 10px rgba(0,0,0,.35);font-size:1.2rem;transition:transform .25s;
   }
-  .refresh-btn:hover{transform:rotate(90deg) scale(1.05);}  .refresh-btn:active{transform:rotate(90deg) scale(.95);}  
+  .refresh-btn:hover{transform:rotate(90deg) scale(1.05);}
+  .refresh-btn:active{transform:rotate(90deg) scale(.95);}
 
     #loginBack{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:10;}
     #loginBox{background:var(--card);backdrop-filter:blur(25px);padding:2rem;border-radius:16px;border:1px solid rgba(255,255,255,.15);display:flex;flex-direction:column;gap:1rem;max-width:320px;width:90%;}
     #loginBox input{padding:.65rem 1rem;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:var(--input-bg);color:var(--text);font-size:.95rem;}
     #loginError{color:#f87171;font-size:.9rem;height:1em;}
     @media (max-width:600px){
-    .price-range{ display:none; }
+      .price-range{ display:none; }
     }
-
-    /* 1) Make all sell-form items one line tall */
-.modal .sell-form {
-  align-items: center;          /* center vertically */
-}
-.modal .sell-form input[type="number"],
-.modal .sell-form .file-fake,
-.modal .sell-form button {
-  height: 2.6rem;               /* match your input’s default height */
-  padding: 0 .75rem;            /* remove vertical padding */
-  line-height: 2.6rem;          /* vertically center text */
-}
-
-/* 2) Give price & file upload exactly 45% each, button takes the rest */
-.modal .sell-form #sellPriceInput,
-.modal .sell-form #sellerFileWrap {
-  flex: 1 1 45%;                /* grow/shrink to 45% */
-  min-width: 0;                 /* prevent overflow */
-}
-
-.modal .sell-form #sellSubmitBtn {
-  flex: 1 1 auto;               /* fill remaining space */
-  min-width: 4rem;              /* keep a usable tap‐area */
-}
-
-/* 3) Shrink the dashed box inside file-wrap */
-.modal .sell-form .file-wrap {
-  position: relative;
-  flex: 1 1 45%;
-}
-.modal .sell-form .file-fake {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
   </style>
 </head>
 <body>
   <div id="particles-js"></div>
-
-  <!-- Login Overlay -->
-  <div id="loginBack">
-    <div id="loginBox">
-      <h2>Seller Login</h2>
-      <input id="adminIdInput" type="text" placeholder="Enter Seller ID" />
-      <button class='login-btn' onclick="attemptLogin()">Login</button>
-      <p id="loginError"></p>
-    </div>
-  </div>
 
   <div id="spinner" class="spinner"></div>
   <iframe name="actionFrame" style="display:none"></iframe>
@@ -165,48 +112,20 @@
       <dl id="mDetails"></dl>
       <img id="mImg" referrerpolicy="no-referrer" style="width:100%;max-height:13em;object-fit:cover;border-radius:10px;margin-top:1rem;display:none;" />
 
-    <div style="display:flex;gap:1rem;margin-top:1.4rem;">
-      <button class="sell-btn" onclick="showSellForm()">Sell</button>
+    <div style="display:flex;gap:1rem;margin-top:2.4rem;">
       <button class="modal-close" onclick="closeModal()">Close</button>
     </div>
-      <div class="sell-form" id="sellForm">
-        <input id="sellPriceInput" type="number" placeholder="Sale Offer (USD)" min="0" step="0.01"/>
-        <!-- Seller Image Upload -->
-        <div class="file-wrap" id="sellerFileWrap">
-          <input type="file" id="sellerImgInput" accept=".jpg,.jpeg,.png">
-          <div class="file-fake" id="seller-image-label">Coin (JPG / PNG)</div>
-        </div>
-        <input type="hidden" name="SellerImageURL" id="sellerImageURL">
-        <button id="sellSubmitBtn" onclick="submitSell()" disabled>Submit</button>
-      </div>
-      <p id="sellMessage" style="margin-top:1rem;height:1em;"></p>
     </div>
   </div>
 
   <button class="refresh-btn" title="Refresh" onclick="refreshData()">⟳</button>
 
   <script>
-    // Admin login
-    const validIDs = ['admin1','admin2','admin3'];
-    let currentUser = null;
-    function attemptLogin() {
-      const id = document.getElementById('adminIdInput').value.trim();
-      if(validIDs.includes(id)) {
-        currentUser = id;
-        document.getElementById('loginBack').style.display = 'none';
-        loadData();
-      } else {
-        document.getElementById('loginError').textContent = 'Invalid ID, please try again.';
-      }
-    }
-
     // Particles
     particlesJS('particles-js',{particles:{number:{value:60},color:{value:'#38bdf8'},shape:{type:'circle'},opacity:{value:0.2},size:{value:2},line_linked:{enable:true,distance:150,color:'#38bdf8',opacity:0.15,width:1},move:{enable:true,speed:1.2,out_mode:'out'}},interactivity:{detect_on:'canvas',events:{onhover:{enable:true,mode:'repulse'},onclick:{enable:true,mode:'push'}},modes:{repulse:{distance:80},push:{particles_nb:4}}},retina_detect:true});
   </script>
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbyKTVbDzAc0vjjtLuUtjUieH-Rh_bMWGYjWKo1iKgwm9nEXTVK6dJ8jEdcvv0TUVpwV/exec?key=byddkey';
-    const API_POST = 'https://script.google.com/macros/s/AKfycbxoNWIdgE80oEDZfA46u99ORi8IKdsAskTxL36ErSxI4DK5WUAnsBsQUpvF323qhA0j/exec';
-    const CLIENT_ID = 'af3f6c7782ab6ed';
     let ROWS=[],FILTERED=[]; let CURRENT=null;
 
     function showSpinner(){document.getElementById('spinner').style.display='flex';}
@@ -217,6 +136,7 @@
 
     function loadData(){ showSpinner(); return fetch(API_URL).then(r=>r.json()).then(rows=>{ROWS=rows;FILTERED=[...ROWS];renderCards(FILTERED);}).finally(()=>hideSpinner()); }
     function refreshData(){ hideCards(); loadData().then(showCards); }
+    loadData();
 
     function renderCards(list){ cardArea.innerHTML = list.map((r,i)=>{
       const desc = r.Details?.length>100 ? r.Details.slice(0,100)+'...' : r.Details||'';
@@ -240,88 +160,36 @@
         <dt>Ideal Price</dt><dd>$${CURRENT['Price']||''}</dd>`;
       const img = document.getElementById('mImg');
       if(CURRENT['Image URL']){ img.src = CURRENT['Image URL']; img.style.display='block'; } else img.style.display='none';
-      document.querySelector('.sell-form').style.display='none';
-      document.getElementById('sellMessage').textContent='';
       document.getElementById('modalBack').style.display='flex';
     }
 
-    function showSellForm(){ document.getElementById('sellForm').style.display='flex'; }
 
-    // Seller form validation & image upload
-    const sellerImgInput = document.getElementById('sellerImgInput');
-    const sellerImageUrlHidden = document.getElementById('sellerImageURL');
-    const sellPriceInput = document.getElementById('sellPriceInput');
-    const sellSubmitBtn = document.getElementById('sellSubmitBtn');
-
-    function validateSellForm() {
-      sellSubmitBtn.disabled = !(sellPriceInput.value && sellerImageUrlHidden.value);
-    }
-
-    sellerImgInput.addEventListener('change', async () => {
-      sellSubmitBtn.disabled = true;
-      const file = sellerImgInput.files[0];
-      if (!file) return;
-      const toBase64 = f => new Promise((res, rej) => { const reader = new FileReader(); reader.onload = e => res(e.target.result); reader.onerror = rej; reader.readAsDataURL(f); });
-      try {
-        const b64 = await toBase64(file);
-        const res = await fetch('https://api.imgur.com/3/image', { method: 'POST', headers: { Authorization: 'Client-ID ' + CLIENT_ID }, body: new URLSearchParams({ image: b64.split(',')[1] }) });
-        const data = await res.json();
-        if (data.success) {
-          sellerImageUrlHidden.value = data.data.link;
-          document.getElementById('seller-image-label').innerText = 'Success!';
-          document.getElementById('seller-image-label').style = 'color:green';
-        } else {
-          throw new Error('Upload failed');
-        }
-      } catch (err) {
-        console.error(err); sellerImgInput.value = ''; sellerImageUrlHidden.value = '';
-        document.getElementById('seller-image-label').innerText = 'Failed.';
-        document.getElementById('seller-image-label').style = 'color:red';
-      } finally { validateSellForm(); }
-    });
-
-    sellPriceInput.addEventListener('input', validateSellForm);
-
-    function submitSell(){
-      const price = sellPriceInput.value;
-      if(!price || !sellerImageUrlHidden.value) return;
-      const form = document.createElement('form');
-      form.style.display='none'; form.target='actionFrame'; form.method='POST'; form.action=API_POST;
-      const add = (n,v)=>{ let i=document.createElement('input'); i.type='hidden'; i.name=n; i.value=v; form.appendChild(i); };
-      add('timestamp', CURRENT.Timestamp);
-      add('coin', CURRENT.Coin);
-      add('description', CURRENT.Details);
-      add('idealprice', CURRENT['Price']);
-      add('imageUrl', CURRENT['Image URL']);
-      add('userId', currentUser);
-      add('sellPrice', price);
-      add('sellerImageURL', sellerImageUrlHidden.value);
-      document.body.appendChild(form);
-      form.submit(); form.remove();
-      document.getElementById('sellMessage').style = 'color:green;margin-bottom:4em;';
-      document.getElementById('sellMessage').textContent='Sale offer submission successful.';
-      setTimeout(()=>{ closeModal(); sellPriceInput.value = ''; sellerImageUrlHidden.value = ''; document.getElementById('seller-image-label').innerText = 'Coin (JPG / PNG)'; validateSellForm();},3000);
-    }
 
     // Filters & sort
-    function applyFilters(){
-      const q=document.getElementById('searchCoin').value.toLowerCase();
-      const minP=parseFloat(document.getElementById('minPrice').value)||-Infinity;
-      const maxP=parseFloat(document.getElementById('maxPrice').value)|| Infinity;
-      const sort=document.querySelector('input[name="sort"]:checked').value;
-      FILTERED=ROWS.filter(r=>{
-        if(q && !(r.Coin||'').toLowerCase().includes(q)) return false;
-        const p=parseFloat(r['minComp']||''); const p1=parseFloat(r['maxComp']||'');
-        if(!isNaN(p) && (p<minP || p1>maxP)) return false;
-        return true;
-      });
-      const price=r=>parseFloat(r['minComp']||'')||0; const time=r=>new Date(r.Timestamp||0).getTime();
-      if(sort==='pAsc')  FILTERED.sort((a,b)=>price(a)-price(b));
-      if(sort==='pDesc') FILTERED.sort((a,b)=>price(b)-price(a));
-      if(sort==='tAsc')  FILTERED.sort((a,b)=>time(a)-time(b));
-      if(sort==='tDesc') FILTERED.sort((a,b)=>time(b)-time(a));
-      renderCards(FILTERED);
-    }
+function applyFilters(){
+  const q=document.getElementById('searchCoin').value.toLowerCase();
+  const minP=parseFloat(document.getElementById('minPrice').value)||-Infinity;
+  const maxP=parseFloat(document.getElementById('maxPrice').value)|| Infinity;
+  const sort=document.querySelector('input[name="sort"]:checked').value;
+  
+
+  FILTERED=ROWS.filter(r=>{
+    if(q && !(r.Coin||'').toLowerCase().includes(q)) return false;
+    const p=parseFloat(r['minComp']||'');
+    const p1=parseFloat(r['maxComp']||'');
+    if(!isNaN(p) && (p<minP || p1>maxP)) return false;
+    return true;
+  });
+
+  const price=r=>parseFloat(r['minComp']||'')||0;
+  const time=r=>new Date(r.Timestamp||0).getTime();
+  if(sort==='pAsc')  FILTERED.sort((a,b)=>price(a)-price(b));
+  if(sort==='pDesc') FILTERED.sort((a,b)=>price(b)-price(a));
+  if(sort==='tAsc')  FILTERED.sort((a,b)=>time(a)-time(b));
+  if(sort==='tDesc') FILTERED.sort((a,b)=>time(b)-time(a));
+
+  renderCards(FILTERED);
+}
   </script>
 </body>
 </html>

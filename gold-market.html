@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bydd – Admin Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <title>Bydd</title>
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 
   <!-- ──────────── glass palette ──────────── -->
@@ -134,7 +134,6 @@
 @media (max-width:600px){
   .price-range{ display:none; }
 }
-
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
@@ -159,7 +158,8 @@
   <div class="price-range">
     <input id="minPrice"   type="number" placeholder="Min Price"    oninput="applyFilters()">
     <input id="maxPrice"   type="number" placeholder="Max Price"    oninput="applyFilters()">
-  </div> 
+  </div>
+
   <div class="sort-group" onchange="applyFilters()">
     <label><input type="radio" name="sort" value="" checked><span>None</span></label>
     <label><input type="radio" name="sort" value="pAsc"><span>Price ↑</span></label>
@@ -179,14 +179,12 @@
     <dl id="mDetails"></dl>
     <img id="mImg" referrerpolicy="no-referrer" style="
       width:100%;
-      max-height:13em;
+      max-height:20em;
       object-fit:cover;
       border-radius:10px;
       margin-top:1rem;
       display:none;">
     <div style="display:flex;gap:1rem;margin-top:1.4rem;">
-      <button class="btn-sold" onclick="markCurrent('Sold')">Sold</button>
-      <button class="btn-del"  onclick="markCurrent('Delete')">Delete</button>
       <button class="modal-close" onclick="closeModal()">Close</button>
     </div>
   </div>
@@ -195,7 +193,7 @@
 <button class="refresh-btn" title="Refresh" onclick="refreshData()">⟳</button>
 
 <script>
-const IS_MOBILE = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+  const IS_MOBILE = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
                     .test(navigator.userAgent);
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbxAe8l-i-di8PdOPvUqhWkjI2AHQOfIWuq0TL-dQhg3GLfHblTcu3cT5L6f9-WusGOy/exec?key=byddkey';
@@ -236,7 +234,6 @@ fetch(API_URL)
 // /* initial load */
 // loadData().finally(hideSpinner);
 
-/* render cards */
 function renderCards(list){
   document.getElementById('cardArea').innerHTML = list.map((r,i) => {
 
@@ -259,7 +256,9 @@ function renderCards(list){
         <div class="price">${r['Ideal Price'] ? `$${r['Ideal Price']}` : ''}</div>
       </div>`;
   }).join('');
+
 }
+
 /* modal logic */
 function closeModal(){document.getElementById('modalBack').style.display='none';}
 
@@ -309,7 +308,6 @@ particlesJS('particles-js',{
 </script>
 <script>
 /* ---------- CONFIG ---------- */
-const API_POST = 'https://script.google.com/macros/s/AKfycbw4Ag-LxBq__lMdf0N6MrXAVu8h4QTrMQyn5PMzd0BPzyLfFPtyZZvLJb0Nxm6F8DYK/exec';
 /* ------ rest of your variables & helper functions stay identical ------ */
 
 /* keep a reference to the current record shown in modal */
@@ -329,8 +327,7 @@ function formatEST(iso){
 }
 
 
-/* showModal: same as before, but also save CURRENT */
-
+/* ---------- show modal with image ---------- */
 function showModal(idx){
   CURRENT = FILTERED[idx];
   const r = CURRENT;
@@ -362,43 +359,6 @@ function showModal(idx){
   document.getElementById('modalBack').style.display = 'flex';
 }
 
-/* ---------- Sold / Delete ---------- */
-function markCurrent(reason){
-  if(!CURRENT) return;
-  if(!confirm(`Mark "${CURRENT.Coin}" as ${reason}?`)) return;
-
-  /* build a throw-away form that targets the hidden iframe */
-  const f = document.createElement('form');
-  f.action = API_POST;
-  f.method = 'POST';
-  f.target = 'actionFrame';
-  f.style.display='none';
-
-  const add = (n,v) => {
-    const i = document.createElement('input');
-    i.type='hidden'; i.name=n; i.value=v; f.appendChild(i);
-  };
-
-  /* pass every field you want to store */
-  add('timestamp',     CURRENT.Timestamp);
-  add('name',          CURRENT.Name);
-  add('coin',          CURRENT.Coin);
-  add('description',   CURRENT.Description);
-  add('idealprice',    CURRENT['Ideal Price']);
-  add('contacttype',   CURRENT['Contact Type']);
-  add('contact',       CURRENT.Contact);
-  add('imgURL',       CURRENT['Image URL']);
-  add('reason',        reason);
-
-  document.body.appendChild(f);
-  f.submit();               // fires the request (no CORS)
-  f.remove();               // clean-up
-
-  /* optimistic UI update */
-  ROWS = ROWS.filter(r => r.Timestamp !== CURRENT.Timestamp);
-  applyFilters();
-  closeModal();
-}
 </script>
 
 </body>
