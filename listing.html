@@ -151,8 +151,8 @@
 
     <!-- coin image -->
     <div class="file-wrap" id="fileWrap">
-      <input type="file" id="imgInput" accept=".jpg,.jpeg,.png" required>
-      <div class="file-fake" id="coin-image-label">Upload Coin Image (JPG / PNG)</div>
+      <input type="file" id="imgInput" accept=".jpg,.jpeg,.png">
+      <div class="file-fake" id="coin-image-label">Upload Coin Image (JPG / PNG), Optional</div>
     </div>
     <input type="hidden" name="imageUrl" id="imageUrl">
 
@@ -252,13 +252,13 @@ imgInput.onchange = async () => {
     if(res.success){
       imgHidden.value=res.data.link;
       fileWrap.classList.add('file-picked');
+      document.getElementById('coin-image-label').innerText = 'Image uploaded successfully.'
     }else throw new Error('Imgur upload failed');
   }catch(e){
     console.error(e);
     imgHidden.value=''; imgInput.value='';
     fileWrap.classList.add('file-error');
   }finally{
-    document.getElementById('coin-image-label').innerText = 'Image uploaded successfully.'
     lockScreen.style.display='none';          // unlock UI
     submitBtn.disabled=false;
   }
@@ -267,7 +267,7 @@ const toBase64=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>r
 
 /* ---------- form status ---------- */
 function showStatus(ev){
-  if(!imgHidden.value){ev.preventDefault();alert('Please upload a coin image.');return;}
+  // if(!imgHidden.value){ev.preventDefault();alert('Please upload a coin image.');return;}
   const st=document.getElementById('status');
   st.textContent='✅ Published!';st.style.display='block';
   setTimeout(()=>{document.getElementById('rfq-form').reset();updateContactField();st.style.display='none';fileWrap.className='file-wrap';},5000);

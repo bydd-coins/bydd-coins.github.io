@@ -52,10 +52,10 @@
         <input type="text" name="coin" placeholder="Coin Name" required>
         <textarea name="details" rows="4" placeholder="Description" required></textarea>
         <div class="file-wrap" id="fileWrap">
-          <input type="file" id="imgInput" accept=".jpg,.jpeg,.png" required>
-          <div class="file-fake" id="coin-image-label">Upload Coin Image (JPG / PNG)</div>
+          <input type="file" id="imgInput" accept=".jpg,.jpeg,.png">
+          <div class="file-fake" id="coin-image-label">Upload Coin Image (JPG / PNG), Optional</div>
         </div>
-        <input type="hidden" name="imageUrl" id="imageUrl" required>
+        <input type="hidden" name="imageUrl" id="imageUrl">
       </div>
 
       <!-- Step 3: Pricing Information -->
@@ -109,7 +109,7 @@
       elems.forEach(el => {
         if(!el.value || !el.checkValidity()) valid = false;
       });
-      if(step === 2 && !imgHidden.value) valid = false;
+      // if(step === 2 && !imgHidden.value) valid = false;
       if(step < totalSteps) nextBtn.disabled = !valid;
       else submitBtn.disabled = !valid;
     }
@@ -148,13 +148,15 @@
       try {
         const b64 = await toBase64(imgInput.files[0]);
         const res = await fetch('https://api.imgur.com/3/image',{ method:'POST', headers:{ Authorization:'Client-ID '+CLIENT_ID }, body:new URLSearchParams({ image: b64.split(',')[1] })}).then(r=>r.json());
-        if(res.success) { imgHidden.value=res.data.link; fileWrap.classList.add('file-picked'); }
+        if(res.success) { imgHidden.value=res.data.link; fileWrap.classList.add('file-picked'); document.getElementById('coin-image-label').innerText = 'Image uploaded successfully.'; document.getElementById('coin-image-label').style = 'color:green'; }
         else throw new Error('Imgur upload failed');
       } catch(e) { console.error(e); imgHidden.value=''; imgInput.value=''; fileWrap.classList.add('file-error'); }
-      finally { document.getElementById('coin-image-label').innerText = 'Image uploaded successfully.'; document.getElementById('coin-image-label').style = 'color:green'; lockScreen.style.display='none'; submitBtn.disabled=false; validateStep(currentStep); }
+      finally { lockScreen.style.display='none'; submitBtn.disabled=false; validateStep(currentStep); }
     };
 
-    function showStatus(ev){ if(!imgHidden.value){ ev.preventDefault(); alert('Please upload a coin image.'); return; } const st = document.getElementById('status'); st.textContent='✅ Published!'; st.style.display='block'; setTimeout(()=>{form.reset(); updateContactField(); showStep(1); st.style.display='none'; fileWrap.className='file-wrap';},5000); }
+    function showStatus(ev){ 
+      // if(!imgHidden.value){ ev.preventDefault(); alert('Please upload a coin image.'); return; } 
+      const st = document.getElementById('status'); st.textContent='✅ Published!'; st.style.display='block'; setTimeout(()=>{form.reset(); updateContactField(); showStep(1); st.style.display='none'; fileWrap.className='file-wrap';},5000); }
   </script>
 </body>
 </html>
