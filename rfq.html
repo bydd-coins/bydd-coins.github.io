@@ -156,7 +156,7 @@
 
     function showStatus(ev){ 
       // if(!imgHidden.value){ ev.preventDefault(); alert('Please upload a coin image.'); return; } 
-      const st = document.getElementById('status'); st.textContent='✅ Published!'; st.style.display='block'; setTimeout(()=>{form.reset(); updateContactField(); showStep(1); st.style.display='none'; fileWrap.className='file-wrap';},5000); }
+      const st = document.getElementById('status'); st.textContent='✅ Published!'; st.style.display='block'; setTimeout(()=>{form.reset(); window.location.reload(); updateContactField(); showStep(1); st.style.display='none'; fileWrap.className='file-wrap';},5000); }
   </script>
 </body>
 </html>
